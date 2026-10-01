@@ -338,6 +338,30 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:600;line-height:1.25;text-w
 }
 @media (max-width:860px){#menuBtn{display:grid!important}}
 @media (max-width:860px){.toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+/* dictation + sentence builder */
+.dict-hint{margin-top:8px;min-height:1.6em;color:var(--ink2)}
+.hint-pat{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;font-size:1.05rem;overflow-wrap:anywhere}
+.dict-in{margin-top:10px;font-size:1.15rem;text-align:center;font-family:var(--f-display);padding:14px}
+.dict-in:focus{border-color:var(--lav)}
+.dict-ans{font-family:var(--f-display);font-size:1.15rem;font-weight:600}
+.letters{font-family:var(--f-display);font-size:1.8rem;letter-spacing:.08em;text-align:center;margin-top:8px;overflow-wrap:anywhere}
+.letters .m{color:var(--good)}.letters .w{color:var(--bad);text-decoration:underline;text-underline-offset:4px}
+.diff{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px}
+.diff .chip{font-size:.9rem;padding:4px 12px}
+.bd-th{font-family:var(--f-cute);font-size:1.2rem;text-align:center;margin:10px 0 16px;text-wrap:balance}
+.bd-zone{min-height:66px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;border-radius:18px;border:2px solid transparent;transition:border-color .2s,background .2s}
+.bd-ans{border:2px dashed var(--line);background:var(--surface2);margin-bottom:12px}
+.bd-bank{justify-content:center}
+.bd-zone.over{border-color:var(--lav);border-style:dashed;background:var(--lav-s)}
+.bd-ph{color:var(--ink3);font-size:.9rem;font-family:var(--f-cute);margin:0 auto}
+.bd-end{font-family:var(--f-display);font-size:1.3rem;color:var(--ink2);margin-left:-4px}
+.wtile{touch-action:none;user-select:none;-webkit-user-select:none;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:7px 14px;font-weight:600;font-family:var(--f-display);font-size:1.08rem;box-shadow:0 3px 0 var(--line);cursor:grab;transition:transform .12s,border-color .2s}
+.wtile:hover{transform:translateY(-2px);border-color:var(--lav)}
+.wtile.ok{border-color:var(--good);background:var(--mint-s);box-shadow:0 3px 0 var(--good)}
+.wtile.no{border-color:var(--bad);background:var(--pink-s);box-shadow:0 3px 0 var(--bad)}
+.wtile.lifting{opacity:.3}
+.wtile.ghost{position:fixed;z-index:1000;pointer-events:none;transform:translate(-50%,-60%) rotate(-3deg);box-shadow:var(--shadow);cursor:grabbing;border-color:var(--lav)}
+@media (max-width:860px){.tabs-scroll{flex-wrap:nowrap;overflow-x:auto;width:100%;scrollbar-width:none}.tabs-scroll::-webkit-scrollbar{display:none}.tabs-scroll button{white-space:nowrap;flex:none}}
 
 </style>
 </head>
@@ -531,6 +555,8 @@ const BADGES=[
  {id:'quiz-1',icon:'📝',name:'นักทดสอบ',desc:'ทำแบบทดสอบครบ 1 ชุด',test:()=>(ST.totals.quizzes||0)>=1},
  {id:'perfect',icon:'🌟',name:'เต็มร้อย',desc:'ได้คะแนนเต็มในแบบทดสอบ',test:()=>(ST.totals.perfect||0)>=1},
  {id:'listen-20',icon:'🎧',name:'หูทิพย์',desc:'ฝึกฟังถูก 20 ข้อ',test:()=>(ST.totals.listen||0)>=20},
+ {id:'dictate-20',icon:'⌨️',name:'นักสะกดคำ',desc:'ฟังแล้วพิมพ์ถูก 20 ข้อ',test:()=>(ST.totals.dictate||0)>=20},
+ {id:'build-20',icon:'🧱',name:'นักต่อประโยค',desc:'เรียงประโยคถูก 20 ข้อ',test:()=>(ST.totals.build||0)>=20},
  {id:'talk-5',icon:'💬',name:'นักสนทนา',desc:'ฝึกบทสนทนาครบ 5 บท',test:()=>(ST.totals.dialogues||0)>=5},
  {id:'streak-3',icon:'🔥',name:'ไฟติด',desc:'เรียนต่อเนื่อง 3 วัน',test:()=>ST.best>=3},
  {id:'streak-7',icon:'🏆',name:'สัปดาห์ทอง',desc:'เรียนต่อเนื่อง 7 วัน',test:()=>ST.best>=7},
@@ -669,7 +695,9 @@ function practiceCards(){return [
   ['bg-sky','🎧','Listening','ฟังคำแล้วเลือกความหมาย',"go('practice','listen')"],
   ['bg-lav','🧩','Grammar Quiz','คลัง '+QUIZZES.length+' ข้อ พร้อมเฉลย',"go('quiz','grammar')"],
   ['bg-mint','📖','Reading','อ่านเรื่องสั้นแล้วตอบคำถาม',"go('practice','reading')"],
-  ['bg-pink','🎤','Speaking','พูดตามประโยคแล้วเช็กคำ',"go('practice','speak')"]].map(c=>`<button class="practice-card ${c[0]}" onclick="${c[4]}"><span class="pi">${c[1]}</span><b>${c[2]}</b><span>${c[3]}</span></button>`).join('')}
+  ['bg-pink','🎤','Speaking','พูดตามประโยคแล้วเช็กคำ',"go('practice','speak')"],
+  ['bg-butter','⌨️','Dictation','ฟังแล้วพิมพ์ตาม ฝึกสะกดคำ',"go('practice','dictate')"],
+  ['bg-peach','🧱','Sentence Builder','เรียงคำให้เป็นประโยค',"go('practice','build')"]].map(c=>`<button class="practice-card ${c[0]}" onclick="${c[4]}"><span class="pi">${c[1]}</span><b>${c[2]}</b><span>${c[3]}</span></button>`).join('')}
 function missionRows(){const d=today(),k=dayKey();return MISSIONS.map(m=>{const val=Math.min(m.goal,d.c[m.id]||0),dn=(ST.missionsDone[k]||[]).includes(m.id);return `<div class="mission ${dn?'done':''}"><span class="mi">${dn?'✅':m.icon}</span><div class="mb"><b style="font-size:.9rem">${m.label}</b><div class="bar" style="height:8px;margin-top:4px"><i style="width:${val/m.goal*100}%"></i></div></div><span class="tiny">${val}/${m.goal}</span></div>`}).join('')}
 
 /* ---------- course (grammar) ---------- */
@@ -876,8 +904,8 @@ function finishQuiz(v,back,score,total){
 /* ---------- practice ---------- */
 let PR=null;
 PAGES.practice=(v,arg)=>{
-  if(arg==='listen')return listening(v);if(arg==='reading')return readingList(v);if(arg&&arg.read)return readingPage(v,arg.read);if(arg==='speak')return speaking(v);
-  v.innerHTML=`<div class="page-head"><div><h1>แบบฝึกหัด</h1><p>ฝึกครบทั้งฟัง พูด อ่าน และไวยากรณ์ เลือกได้ตามอารมณ์วันนี้</p></div></div><div class="grid g4">${practiceCards()}</div>
+  if(arg==='listen')return listening(v);if(arg==='reading')return readingList(v);if(arg&&arg.read)return readingPage(v,arg.read);if(arg==='speak')return speaking(v);if(arg==='dictate')return dictation(v);if(arg==='build')return builder(v);
+  v.innerHTML=`<div class="page-head"><div><h1>แบบฝึกหัด</h1><p>ฝึกครบทั้งฟัง พูด อ่าน เขียน และไวยากรณ์ เลือกได้ตามอารมณ์วันนี้</p></div></div><div class="grid g3">${practiceCards()}</div>
    <div class="card"><h3>🗓️ ภารกิจวันนี้</h3><div class="list">${missionRows()}</div></div>`;
 };
 function listening(v){
@@ -931,6 +959,166 @@ function speaking(v){
     rec.onend=()=>{const b=$('#rec');if(b)b.textContent='🎤 กดแล้วพูด'};try{rec.start()}catch(e){selfEval('เริ่มฟังเสียงไม่ได้ ลองพูดตามแล้วประเมินตัวเอง')}};
 }
 
+/* ---------- shared: sentence bank + diff ---------- */
+let SENTS=null;
+const SENT_OK=/^[A-Za-z0-9 ,.'?!’\-]+$/;
+/** ประโยคตัวอย่างจากบทเรียนไวยากรณ์ (มีคำแปลไทย) + ประโยคจากบทสนทนา */
+function sentBank(){
+  if(SENTS)return SENTS;SENTS=[];
+  LESSONS.forEach((L,li)=>String(L.it.ex||'').split('\n').forEach(line=>{
+    const m=line.match(/<span\b[^>]*class=["']trn["'][^>]*>([\s\S]*?)<\/span>/);
+    const en=line.replace(/<span\b[^>]*class=["']trn["'][^>]*>[\s\S]*?<\/span>/g,'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+    if(!m||!SENT_OK.test(en))return;const n=en.split(' ').length;
+    if(n>=4&&n<=10)SENTS.push({en,th:plain(m[1]).replace(/^\(|\)$/g,'').trim(),tag:L.it.en,tid:L.t.id,li});
+  }));
+  DIALOGUES.forEach(d=>d.lines.forEach(l=>{const en=String(l[1]).trim(),n=en.split(/\s+/).length;
+    if(SENT_OK.test(en)&&n>=3&&n<=10)SENTS.push({en,th:l[2],tag:d.title,tid:'talk'})}));
+  return SENTS;
+}
+const normEn=s=>String(s).toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z0-9' ]+/g,' ').replace(/\s+/g,' ').trim();
+/** จับคู่ส่วนที่ตรงกันมากที่สุด (LCS) คืนค่าว่าแต่ละตำแหน่งของ a และ b ตรงกันไหม */
+function lcsMatch(a,b){
+  const n=a.length,m=b.length,dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  const A=new Array(n).fill(false),B=new Array(m).fill(false);let i=0,j=0;
+  while(i<n&&j<m){if(a[i]===b[j]){A[i]=B[j]=true;i++;j++}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++}
+  return{A,B};
+}
+
+/* ---------- Dictation: ฟังแล้วพิมพ์ ---------- */
+function dictNew(){
+  PR.done=false;PR.hint=0;PR.tries=0;
+  if(PR.mode==='word'){const w=rand(vocabPool().filter(w=>/^[a-z]{3,}$/.test(w.word)));PR.cur={text:w.word,th:w.meaning,read:w.thaiReading||'',tag:[w.level,w.pos].filter(Boolean).join(' · ')}}
+  else{const s=rand(sentBank());PR.cur={text:s.en,th:s.th,read:'',tag:s.tag,li:s.li}}
+}
+function dictation(v){
+  if(!PR||PR.type!=='dictate'){PR={type:'dictate',mode:'word',n:0,score:0};dictNew()}
+  const c=PR.cur,isW=PR.mode==='word';
+  v.innerHTML=`<div class="crumbs"><button onclick="go('practice')">แบบฝึกหัด</button>›<span>Dictation</span></div>
+   <div class="card q-box" style="text-align:center">
+    <div class="tabs" style="margin:0 auto 14px">${[['word','🔤 คำศัพท์'],['sent','💬 ประโยค']].map(t=>`<button class="${PR.mode===t[0]?'on':''}" data-m="${t[0]}">${t[1]}</button>`).join('')}</div>
+    <div class="q-prog"><span>ข้อที่ ${PR.n+1}</span><span>ถูก ${PR.score}</span></div>
+    <p class="muted">ฟังแล้วพิมพ์${isW?'คำ':'ประโยค'}ที่ได้ยิน${isW?'':' ไม่ต้องสนใจตัวพิมพ์ใหญ่และเครื่องหมายวรรคตอน'}</p>
+    <div style="margin:14px 0"><button class="big-play" id="dplay" aria-label="ฟังเสียง">🔊</button></div>
+    <div class="row" style="justify-content:center"><button class="btn sm ghost" id="dslow">🐢 ฟังช้า ๆ</button><button class="btn sm ghost" id="dhint">💡 คำใบ้</button></div>
+    <div id="dhintBox" class="dict-hint"></div>
+    <input class="sel dict-in" id="din" placeholder="${isW?'พิมพ์คำที่ได้ยิน':'พิมพ์ประโยคที่ได้ยิน'}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="คำตอบ">
+    <div class="explain" id="dres" style="text-align:left"></div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost" onclick="PR=null;go('practice')">จบการฝึก</button><span class="spacer"></span><button class="btn" id="dskip">ข้าม</button><button class="btn pri" id="dgo">ตรวจคำตอบ</button></div>
+   </div>`;
+  const inp=$('#din'),res=$('#dres'),goBtn=$('#dgo');
+  v.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{if(PR.mode===b.dataset.m)return;PR.mode=b.dataset.m;PR.n=0;PR.score=0;dictNew();dictation(v)});
+  const play=slow=>{const r=ST.rate;if(slow)ST.rate=isW?.55:.6;speak(c.text);ST.rate=r};
+  $('#dplay').onclick=()=>{play(false);inp.focus()};$('#dslow').onclick=()=>{play(true);inp.focus()};
+  const drawHint=()=>{if(!PR.hint)return;const pat=c.text.split(' ').map(w=>w.replace(/[A-Za-z0-9]/g,(ch,i)=>i===0?ch:'_')).join('  ');
+    $('#dhintBox').innerHTML=`<span class="hint-pat">${esc(pat)}</span>${PR.hint>1?`<div style="margin-top:4px">ความหมาย: <b>${esc(c.th)}</b></div>`:''}`;
+    $('#dhint').disabled=PR.hint>1};
+  $('#dhint').onclick=()=>{PR.hint=Math.min(2,PR.hint+1);drawHint()};drawHint();
+  const next=()=>{PR.n++;dictNew();dictation(v)};
+  const reveal=(ok)=>{PR.done=true;inp.disabled=true;goBtn.textContent='ข้อถัดไป →';$('#dskip').hidden=true;$('#dhint').disabled=true;
+    const link=c.li!=null?` <button class="btn sm ghost" onclick="openLesson(${c.li})">📘 ${esc(c.tag)}</button>`:(c.tag?` <span class="chip">${esc(c.tag)}</span>`:'');
+    res.innerHTML=`${ok?'🎉 <b>ถูกต้อง!</b>':'📝 <b>เฉลย</b>'} <span class="dict-ans">${esc(c.text)}</span> ${c.read?`<span class="muted">${esc(c.read)}</span>`:''}<br>${esc(c.th)}${link}`;res.classList.add('show');speak(c.text)};
+  const check=()=>{
+    if(PR.done)return next();
+    const got=normEn(inp.value);if(!got){toast('⌨️','พิมพ์คำตอบก่อนนะ');inp.focus();return}
+    const want=normEn(c.text);
+    if(got===want){PR.score++;award(PR.hint?2:5,'dictate');award(0,'listen');return reveal(true)}
+    PR.tries++;
+    let diff;
+    if(isW){const a=[...want],b=[...got],{A}=lcsMatch(a,b);
+      diff=`<div class="letters">${a.map((ch,i)=>`<span class="${A[i]?'m':'w'}">${esc(ch)}</span>`).join('')}</div><p class="tiny" style="text-align:center">ตัวอักษรสีชมพูคือส่วนที่พิมพ์ผิดหรือขาดไป</p>`}
+    else{const a=want.split(' '),b=got.split(' '),{A,B}=lcsMatch(a,b);
+      diff=`<div class="diff">${a.map((w,i)=>`<span class="chip ${A[i]?'c-mint':'c-pink'}">${A[i]?esc(w):'?'.repeat(Math.min(w.length,8))}</span>`).join('')}</div>
+        ${B.some(x=>!x)?`<p class="tiny" style="text-align:center">คำที่เกินหรือสะกดผิด: ${b.filter((w,i)=>!B[i]).map(w=>`<s>${esc(w)}</s>`).join(' ')}</p>`:''}<p class="tiny" style="text-align:center">ช่องสีชมพูคือคำที่ยังไม่ถูก</p>`}
+    res.innerHTML=`<b>ยังไม่ถูกทั้งหมด</b> ลองฟังอีกครั้งแล้วแก้คำตอบ${diff}<div class="row" style="justify-content:center"><button class="btn sm" id="dagain">🔊 ฟังอีกครั้ง</button><button class="btn sm ghost" id="dshow">ดูเฉลย</button></div>`;
+    res.classList.add('show');$('#dagain').onclick=()=>{play(false);inp.focus()};$('#dshow').onclick=()=>reveal(false);inp.focus();inp.select();
+  };
+  goBtn.onclick=check;$('#dskip').onclick=next;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();check()}};
+  setTimeout(()=>{play(false);if(matchMedia('(pointer:fine)').matches)inp.focus()},300);
+}
+
+/* ---------- Sentence Builder: เรียงคำเป็นประโยค ---------- */
+function buildPool(){const all=sentBank();const p=PR.tid==='all'?all:all.filter(s=>s.tid===PR.tid);return p.length?p:all}
+function buildNew(){
+  const pool=buildPool();let s,k=0;do{s=rand(pool);k++}while(pool.length>1&&s===PR.last&&k<6);PR.last=s;
+  const words=s.en.split(/\s+/);let end='';const m=words[words.length-1].match(/^(.*?)([.?!]+)$/);if(m&&m[1]){words[words.length-1]=m[1];end=m[2]}
+  const tiles=words.map((t,i)=>({id:i,t}));let bank=shuffle(tiles);
+  for(let i=0;i<6&&bank.every((x,j)=>x.t===words[j]);i++)bank=shuffle(tiles);
+  PR.cur={s,words,end,bank,ans:[],marks:null,msg:'',solved:false,hints:0};
+}
+function builder(v){
+  if(!PR||PR.type!=='build'){PR={type:'build',tid:'all',n:0,score:0};buildNew()}
+  const bank=sentBank();
+  const topics=[['all','✨ ทั้งหมด'],...D.filter(t=>bank.filter(s=>s.tid===t.id).length>=5).map(t=>[t.id,`${(TOPIC_STYLE[t.id]||{}).icon||'📘'} ${t.en}`]),['talk','💬 บทสนทนา']];
+  v.innerHTML=`<div class="crumbs"><button onclick="go('practice')">แบบฝึกหัด</button>›<span>Sentence Builder</span></div>
+   <div class="page-head"><div><h1>เรียงคำเป็นประโยค</h1><p>อ่านความหมายภาษาไทย แล้วแตะหรือลากคำมาเรียงเป็นประโยคภาษาอังกฤษ คลังมี ${nf(bank.length)} ประโยคจากบทเรียนและบทสนทนา</p></div></div>
+   <div class="tabs tabs-scroll" style="margin-bottom:14px">${topics.map(t=>`<button class="${PR.tid===t[0]?'on':''}" data-tid="${t[0]}">${esc(t[1])}</button>`).join('')}</div>
+   <div class="card q-box" id="bd"></div>`;
+  v.querySelectorAll('[data-tid]').forEach(b=>b.onclick=()=>{PR.tid=b.dataset.tid;PR.n=0;PR.score=0;buildNew();builder(v)});
+  drawBuild();
+}
+function drawBuild(){
+  const c=PR.cur,box=$('#bd');if(!box)return;
+  const tile=(x,cls)=>`<button class="wtile ${cls||''}" data-id="${x.id}">${esc(x.t)}</button>`;
+  box.innerHTML=`<div class="q-prog"><span>ข้อที่ ${PR.n+1}</span><span>ถูก ${PR.score}</span></div>
+    <div style="text-align:center"><span class="chip c-butter">${esc(c.s.tag)}</span></div>
+    <div class="bd-th">${esc(c.s.th)}</div>
+    <div class="bd-zone bd-ans" data-zone="ans" aria-label="ประโยคคำตอบ">${c.ans.length?c.ans.map((x,i)=>tile(x,c.marks?c.marks[i]:'')).join('')+(c.end?`<span class="bd-end">${esc(c.end)}</span>`:''):'<span class="bd-ph">แตะหรือลากคำด้านล่างมาวางที่นี่</span>'}</div>
+    <div class="bd-zone bd-bank" data-zone="bank" aria-label="คำที่เหลือ">${c.bank.length?c.bank.map(x=>tile(x)).join(''):(c.solved?'':'<span class="bd-ph">วางครบแล้ว กดตรวจคำตอบได้เลย</span>')}</div>
+    <div class="explain ${c.msg?'show':''}" id="bres">${c.msg}</div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost" onclick="PR=null;go('practice')">จบการฝึก</button><span class="spacer"></span>
+     ${c.solved?`<button class="btn sm" id="bsay">🔊 ฟังประโยค</button><button class="btn pri" id="bnext">ข้อถัดไป →</button>`
+     :`<button class="btn sm ghost" id="bclr">↺ ล้าง</button><button class="btn sm ghost" id="bhint">💡 ใบ้ 1 คำ</button><button class="btn pri" id="bchk">ตรวจคำตอบ</button>`}</div>`;
+  if(c.solved){$('#bsay').onclick=()=>speak(c.s.en);$('#bnext').onclick=()=>{PR.n++;buildNew();drawBuild()};return}
+  $('#bclr').onclick=()=>{c.bank=c.bank.concat(c.ans);c.ans=[];c.marks=null;c.msg='';drawBuild()};
+  $('#bhint').onclick=()=>{let k=0;while(k<c.ans.length&&c.ans[k].t===c.words[k])k++;if(k>=c.words.length)return;
+    c.bank=c.bank.concat(c.ans.splice(k));const j=c.bank.findIndex(x=>x.t===c.words[k]);c.ans.push(c.bank.splice(j,1)[0]);c.hints++;c.marks=null;c.msg='';drawBuild()};
+  $('#bchk').onclick=()=>{
+    if(c.bank.length){toast('🧩','ยังวางคำไม่ครบทุกคำ');return}
+    c.marks=c.ans.map((x,i)=>x.t===c.words[i]?'ok':'no');
+    if(c.marks.every(m=>m==='ok')){c.solved=true;PR.score++;award(c.hints?2:5,'build');speak(c.s.en);c.msg=buildMsg(c,true)}
+    else{c.msg=`<b>เกือบแล้ว!</b> คำที่เป็นสีชมพูยังอยู่ผิดตำแหน่ง ลากย้ายแล้วกดตรวจอีกครั้ง <button class="btn sm ghost" id="breveal" style="margin-left:6px">ดูเฉลย</button>`}
+    drawBuild();
+  };
+  const rv=$('#breveal');if(rv)rv.onclick=()=>{const pool=c.ans.concat(c.bank);c.ans=c.words.map(w=>pool.splice(pool.findIndex(x=>x.t===w),1)[0]);c.bank=[];
+    c.marks=c.ans.map(()=>'ok');c.solved=true;speak(c.s.en);c.msg=buildMsg(c,false);drawBuild()};
+  bdBind(box);
+}
+function buildMsg(c,ok){return `${ok?'🎉 <b>ถูกต้อง!</b>':'📝 <b>เฉลย</b>'} ${esc(c.s.en)}<br><span class="muted">${esc(c.s.th)}</span>${c.s.li!=null?`<div style="margin-top:8px"><button class="btn sm ghost" onclick="openLesson(${c.s.li})">📘 ทบทวนบท ${esc(c.s.tag)}</button></div>`:''}`}
+/** ย้ายคำไปยังโซน (ans/bank) ที่ตำแหน่ง idx */
+function bdMove(id,zone,idx){
+  const c=PR.cur;let x=null;
+  for(const arr of [c.ans,c.bank]){const i=arr.findIndex(t=>t.id===id);if(i>=0){x=arr.splice(i,1)[0];break}}
+  if(!x)return;const dst=zone==='ans'?c.ans:c.bank;dst.splice(idx==null?dst.length:Math.min(idx,dst.length),0,x);
+  c.marks=null;c.msg='';drawBuild();
+}
+/** แตะ = ย้ายไปอีกฝั่ง, ลาก = วางตรงตำแหน่งที่ปล่อย (ใช้ pointer events รองรับทั้งเมาส์และนิ้ว) */
+function bdBind(box){
+  const zoneAt=(x,y)=>{const el=document.elementFromPoint(x,y);return el&&el.closest('[data-zone]')};
+  const idxAt=(zone,x,y,skip)=>{const ts=[...zone.querySelectorAll('.wtile')].filter(t=>t!==skip);let i=0;
+    for(const t of ts){const r=t.getBoundingClientRect();if(y<r.top||(y<=r.bottom&&x<r.left+r.width/2))return i;i++}return i};
+  box.querySelectorAll('.wtile').forEach(el=>{
+    const id=+el.dataset.id,inAns=!!el.closest('[data-zone="ans"]');
+    el.onclick=e=>{if(e.detail===0)bdMove(id,inAns?'bank':'ans')};
+    el.onpointerdown=e=>{
+      if(e.button>0)return;e.preventDefault();
+      const sx=e.clientX,sy=e.clientY;let drag=false,ghost=null,over=null;
+      const move=ev=>{
+        if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>6){drag=true;ghost=el.cloneNode(true);ghost.classList.add('ghost');document.body.appendChild(ghost);el.classList.add('lifting')}
+        if(!drag)return;ev.preventDefault();ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px';
+        const z=zoneAt(ev.clientX,ev.clientY);if(z!==over){over&&over.classList.remove('over');over=z;z&&z.classList.add('over')}};
+      const up=ev=>{
+        removeEventListener('pointermove',move);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);
+        if(!drag){if(ev.type==='pointerup')bdMove(id,inAns?'bank':'ans');return}
+        ghost.remove();el.classList.remove('lifting');over&&over.classList.remove('over');
+        const z=ev.type==='pointerup'&&zoneAt(ev.clientX,ev.clientY);
+        if(z)bdMove(id,z.dataset.zone,idxAt(z,ev.clientX,ev.clientY,el));else drawBuild()};
+      addEventListener('pointermove',move,{passive:false});addEventListener('pointerup',up);addEventListener('pointercancel',up);
+    };
+  });
+}
+
 /* ---------- conversation ---------- */
 PAGES.talk=(v,id)=>{
   if(!id){v.innerHTML=`<div class="page-head"><div><h1>บทสนทนา</h1><p>ฟังบทสนทนาจริงในชีวิตประจำวัน แล้วลองเล่นบทบาทเป็น “You”</p></div></div>
@@ -964,7 +1152,7 @@ PAGES.stats=v=>{
   <div class="grid g2"><div class="card chart"><h3>⭐ XP รายวัน (14 วันล่าสุด)</h3>${svg}</div>
    <div class="card"><h3>🃏 สถานะคำศัพท์</h3><div class="bar" style="height:22px;display:flex">${vs.map(s=>`<i style="width:${s[1]/VOCAB.length*100}%;background:${s[2]};border-radius:0"></i>`).join('')}</div><div class="list" style="margin-top:12px">${vs.map(s=>`<div class="row"><span style="width:12px;height:12px;border-radius:4px;background:${s[2]}"></span><span>${s[0]}</span><span class="spacer"></span><b style="font-variant-numeric:tabular-nums">${nf(s[1])}</b></div>`).join('')}</div></div></div>
   <div class="card"><h3>📘 ความคืบหน้าไวยากรณ์แต่ละหมวด</h3><div class="list">${D.map(t=>{const ls=LESSONS.filter(r=>r.t.id===t.id),dn=ls.filter(r=>gProg[r.key]).length;return `<div><div class="row"><span>${TOPIC_STYLE[t.id].icon} ${esc(t.en)}</span><span class="spacer"></span><span class="tiny">${dn}/${ls.length}</span></div><div class="bar" style="height:9px"><i style="width:${dn/ls.length*100}%"></i></div></div>`}).join('')}</div></div>
-  <div class="grid g4">${[['🎧','ฟังถูก',ST.totals.listen||0],['🎤','ฝึกพูด',ST.totals.speak||0],['💬','บทสนทนา',ST.totals.dialogues||0],['📝','แบบทดสอบ',ST.totals.quizzes||0]].map(t=>`<div class="card tile"><div class="ic bg-mint">${t[0]}</div><div><b>${nf(t[2])}</b><span>${t[1]}</span></div></div>`).join('')}</div>`;
+  <div class="grid g3">${[['🎧','ฟังถูก',ST.totals.listen||0],['⌨️','พิมพ์ตามเสียงถูก',ST.totals.dictate||0],['🧱','เรียงประโยคถูก',ST.totals.build||0],['🎤','ฝึกพูด',ST.totals.speak||0],['💬','บทสนทนา',ST.totals.dialogues||0],['📝','แบบทดสอบ',ST.totals.quizzes||0]].map(t=>`<div class="card tile"><div class="ic bg-mint">${t[0]}</div><div><b>${nf(t[2])}</b><span>${t[1]}</span></div></div>`).join('')}</div>`;
 };
 
 /* ---------- rewards ---------- */
